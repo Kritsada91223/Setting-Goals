@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>AB Business Forms</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AB Forms">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="theme-color" content="#111111">
+
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --black: #111111;
+    --white: #ffffff;
+    --gray-light: #e8e8e8;
+    --gray-mid: #aaaaaa;
+    --gray-dark: #555555;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Sarabun', sans-serif;
+    background: #111111;
+  }
+
+  /* ===== APP SHELL ===== */
+  #app {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    background: #f0f0f0;
+    padding-top: var(--safe-top);
+    padding-bottom: var(--safe-bottom);
+  }
+
+  /* ===== BOTTOM NAV BAR ===== */
+  .bottom-nav {
+    display: flex;
+    background: var(--black);
+    border-top: 2px solid #333;
+    flex-shrink: 0;
+    padding-bottom: var(--safe-bottom);
+  }
+
+  .nav-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 4px 8px;
+    border: none;
+    background: transparent;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.2s;
+    gap: 4px;
+  }
+
+  .nav-btn.active { color: #ffffff; }
+
+  .nav-btn .nav-icon {
+    font-size: 20px;
+    line-height: 1;
+  }
+
+  .nav-btn .nav-label {
+    font-family: 'Oswald', sans-serif;
+    font-size: 9px;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .nav-btn.active .nav-label {
+    color: #fff;
+  }
+
+  .nav-indicator {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: transparent;
+    margin-top: 2px;
+  }
+
+  .nav-btn.active .nav-indicator {
+    background: #ffffff;
+  }
+
+  /* ===== SCROLLABLE CONTENT AREA ===== */
+  .content-area {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding: 16px 14px 24px;
+  }
+
+  /* ===== PAGES ===== */
+  .page { display: none; animation: fadeIn 0.2s ease; }
+  .page.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== WHITE CARD WRAPPER ===== */
+  .card {
+    background: var(--white);
+    border-radius: 16px;
+    padding: 20px 16px 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+
+  /* ===== USER INFO BAR ===== */
+  .user-info-bar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .user-info-field {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  .user-info-field label {
+    font-size: 9px;
+    font-weight: 600;
+    color: var(--gray-dark);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+    font-family: 'Oswald', sans-serif;
+  }
+
+  .user-info-field input {
+    border: none;
+    border-bottom: 1.5px solid var(--black);
+    background: transparent;
+    font-family: 'Sarabun', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--black);
+    outline: none;
+    text-align: right;
+    padding: 2px 0;
+    width: 110px;
+  }
+
+  .user-info-field input.date-input {
+    width: 95px;
+    font-family: 'Oswald', sans-serif;
+    letter-spacing: 0.5px;
+    font-size: 11px;
+  }
+
+  .user-info-field input::placeholder { color: #ccc; font-weight: 400; }
+  .info-divider { width: 1px; height: 28px; background: var(--gray-light); }
+
+  /* ===== PAGE HEADER ===== */
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 3px solid var(--black);
+    position: relative;
+  }
+
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 56px;
+    right: 0;
+    height: 1px;
+    background: var(--gray-mid);
+  }
+
+  .logo {
+    width: 42px;
+    height: 42px;
+    background: var(--black);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .logo span {
+    font-family: 'Oswald', sans-serif;
+    color: var(--white);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+
+  .header-text { flex: 1; }
+
+  .header-sub {
+    font-size: 8px;
+    color: var(--gray-dark);
+    letter-spacing: 0.2px;
+    margin-bottom: 2px;
+  }
+
+  .header-title {
+    font-family: 'Oswald', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--black);
+    line-height: 1.1;
+  }
+
+  /* ===== GOALS GRID ===== */
+  .goals-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+  }
+
+  .goal-card {
+    background: var(--gray-light);
+    border-radius: 12px;
+    padding: 11px;
+    position: relative;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .goal-card label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--black);
+    margin-bottom: 7px;
+    display: block;
+  }
+
+  .goal-card textarea {
+    flex: 1;
+    border: none;
+    background: transparent;
+    resize: none;
+    font-family: 'Sarabun', sans-serif;
+    font-size: 12px;
+    color: var(--black);
+    outline: none;
+    width: 100%;
+  }
+
+  .goal-card textarea::placeholder { color: #bbb; }
+
+  .goal-right {
+    background: var(--white);
+    border: 2px solid var(--gray-mid);
+    overflow: hidden;
+  }
+
+  .goal-right label {
+    position: absolute;
+    top: 9px;
+    right: 10px;
+    font-size: 10px;
+    color: var(--gray-dark);
+    font-weight: 500;
+  }
+
+  .goal-right textarea {
+    padding-top: 22px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .watermark {
+    position: absolute;
+    bottom: 6px;
+    right: 8px;
+    font-family: 'Oswald', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: rgba(0,0,0,0.06);
+    letter-spacing: 1px;
+    pointer-events: none;
+    user-select: none;
+    text-align: right;
+    line-height: 1.2;
+  }
+
+  /* ===== WEEKLY UPDATE ===== */
+  .section-block {
+    background: var(--white);
+    border: 1.5px solid var(--gray-light);
+    border-radius: 12px;
+    padding: 13px;
+    margin-bottom: 9px;
+  }
+
+  .section-block label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--black);
+    margin-bottom: 6px;
+  }
+
+  .section-block label span {
+    font-weight: 400;
+    color: var(--gray-dark);
+    font-size: 10px;
+  }
+
+  .section-block textarea {
+    width: 100%;
+    border: none;
+    resize: none;
+    font-family: 'Sarabun', sans-serif;
+    font-size: 12px;
+    color: var(--black);
+    outline: none;
+    background: transparent;
+    min-height: 56px;
+  }
+
+  .section-block textarea::placeholder { color: #bbb; }
+
+  .week-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    background: var(--gray-light);
+    border-radius: 10px;
+    padding: 10px 14px;
+  }
+
+  .week-label {
+    font-family: 'Oswald', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--black);
+  }
+
+  .week-input {
+    font-family: 'Oswald', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--black);
+    border: none;
+    border-bottom: 2px solid var(--black);
+    outline: none;
+    width: 52px;
+    text-align: center;
+    background: transparent;
+  }
+
+  /* ===== ORG CHART ===== */
+  .org-legend {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+    padding: 9px;
+    background: var(--gray-light);
+    border-radius: 8px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    color: var(--gray-dark);
+  }
+
+  .legend-dot {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+  }
+
+  .legend-dot.black { background: var(--black); }
+  .legend-dot.gray { background: var(--gray-light); border: 1px solid var(--gray-mid); }
+  .legend-dot.light { background: var(--white); border: 1px solid var(--gray-light); }
+
+  .org-tree { padding: 6px 0; overflow-x: auto; }
+
+  .org-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .org-box {
+    background: var(--gray-light);
+    border: 2px solid var(--gray-mid);
+    border-radius: 50%;
+    width: 88px;
+    height: 88px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 8px;
+    flex-shrink: 0;
+  }
+
+  .org-box.root {
+    background: var(--black);
+    border-color: var(--black);
+    width: 100px;
+    height: 100px;
+  }
+  .org-box.root input { color: var(--white); }
+  .org-box.root input::placeholder { color: rgba(255,255,255,0.35); }
+
+  .org-box input {
+    border: none;
+    background: transparent;
+    font-family: 'Sarabun', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--black);
+    text-align: center;
+    width: 100%;
+    outline: none;
+  }
+
+  .org-box .rank-input { font-size: 9px; font-weight: 400; color: var(--gray-dark); margin-top: 2px; }
+  .org-box.root .rank-input { color: rgba(255,255,255,0.55); }
+
+  .connector-down { width: 2px; height: 18px; background: var(--gray-mid); margin: 0 auto; }
+
+  .org-children {
+    display: flex;
+    gap: 12px;
+    position: relative;
+    padding-top: 0;
+  }
+
+  .org-children::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 2px;
+    background: var(--gray-mid);
+    width: calc(100% - 55px);
+  }
+
+  .org-child {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .org-child::before {
+    content: '';
+    display: block;
+    width: 2px;
+    height: 16px;
+    background: var(--gray-mid);
+    margin: 0 auto;
+  }
+
+  .org-grandchildren {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-top: 0;
+    align-items: center;
+  }
+
+  .org-grandchild {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .org-grandchild::before {
+    content: '';
+    display: block;
+    width: 2px;
+    height: 10px;
+    background: var(--gray-light);
+    margin: 0 auto;
+  }
+
+  .org-box.small { width: 72px; height: 72px; padding: 6px; }
+  .org-box.small input { font-size: 10px; }
+
+  .add-btn {
+    background: none;
+    border: 2px dashed var(--gray-mid);
+    border-radius: 8px;
+    padding: 5px 11px;
+    font-family: 'Sarabun', sans-serif;
+    font-size: 11px;
+    color: var(--gray-mid);
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 85px;
+    text-align: center;
+  }
+
+  .add-btn:active { border-color: var(--black); color: var(--black); }
+
+  /* ===== SAVE BUTTON ===== */
+  .save-btn {
+    width: 100%;
+    margin-top: 18px;
+    padding: 14px;
+    background: var(--black);
+    color: var(--white);
+    border: none;
+    border-radius: 12px;
+    font-family: 'Oswald', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .save-btn:active { opacity: 0.7; }
+
+  .saved-toast {
+    display: none;
+    text-align: center;
+    margin-top: 10px;
+    font-size: 13px;
+    color: #27ae60;
+    font-weight: 600;
+  }
+
+  /* ===== INSTALL BANNER ===== */
+  #installBanner {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--black);
+    color: var(--white);
+    padding: 10px 14px;
+    font-size: 12px;
+    font-family: 'Sarabun', sans-serif;
+    flex-shrink: 0;
+  }
+
+  #installBanner button {
+    background: var(--white);
+    color: var(--black);
+    border: none;
+    border-radius: 6px;
+    padding: 5px 12px;
+    font-family: 'Oswald', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+  }
+
+  #installBanner .close-banner {
+    background: transparent;
+    color: #888;
+    font-size: 16px;
+    padding: 0 4px;
+    font-family: inherit;
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- Install Banner -->
+  <div id="installBanner">
+    <span>📲 ติดตั้งแอพลงมือถือ</span>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button id="installBtn">INSTALL</button>
+      <button class="close-banner" onclick="document.getElementById('installBanner').style.display='none'">✕</button>
+    </div>
+  </div>
+
+  <!-- Scrollable content -->
+  <div class="content-area">
+
+    <!-- PAGE 0: SETTING GOALS -->
+    <div class="page active" id="page0">
+      <div class="card">
+        <div class="user-info-bar">
+          <div class="user-info-field">
+            <label>ชื่อ</label>
+            <input type="text" class="shared-name" placeholder="ชื่อ-นามสกุล" oninput="syncName(this.value)">
+          </div>
+          <div class="info-divider"></div>
+          <div class="user-info-field">
+            <label>วัน/เดือน/ปี</label>
+            <input type="text" class="shared-date date-input" placeholder="DD/MM/YYYY" oninput="syncDate(this.value)">
+          </div>
+        </div>
+
+        <div class="header">
+          <div class="logo"><span>AB</span></div>
+          <div class="header-text">
+            <div class="header-sub">ส่งเป้าหมายทุกต้นเดือน / Update ทุกสัปดาห์ / ลงงานล่วงหน้าอย่างน้อย 2 วัน</div>
+            <div class="header-title">Setting Goals</div>
+          </div>
+        </div>
+
+        <div class="goals-grid">
+          <div class="goal-card">
+            <label>ระยะสั้น (เป้าหมาย 1 เดือน)</label>
+            <textarea placeholder="เขียนเป้าหมายของคุณ..."></textarea>
+          </div>
+          <div class="goal-card goal-right">
+            <label>ยอด</label>
+            <textarea placeholder="ใส่ตัวเลขยอด..."></textarea>
+            <div class="watermark">PPV</div>
+          </div>
+
+          <div class="goal-card">
+            <label>ระยะกลาง (เป้าหมาย 1 ปีบัญชี)</label>
+            <textarea placeholder="เขียนเป้าหมายของคุณ..."></textarea>
+          </div>
+          <div class="goal-card goal-right">
+            <label>คน</label>
+            <textarea placeholder="จำนวนคน..."></textarea>
+            <div class="watermark">NEW AT</div>
+          </div>
+
+          <div class="goal-card">
+            <label>ระยะยาว (เป้าหมาย 5 ปีหน้า)</label>
+            <textarea placeholder="เขียนเป้าหมายของคุณ..."></textarea>
+          </div>
+          <div class="goal-card goal-right">
+            <label>พัฒนา</label>
+            <textarea placeholder="จำนวนขา..."></textarea>
+            <div class="watermark">5+3</div>
+          </div>
+
+          <div class="goal-card" style="grid-column:1/-1;min-height:90px;">
+            <label>เป้าหมายชีวิต (ใช้ชีวิตยังไง)</label>
+            <textarea placeholder="อยากใช้ชีวิตแบบไหน? อยากได้อะไรจากธุรกิจนี้..."></textarea>
+          </div>
+        </div>
+
+        <button class="save-btn" onclick="saveData(0)">SAVE GOALS</button>
+        <div class="saved-toast" id="toast0">✓ บันทึกแล้ว</div>
+      </div>
+    </div>
+
+    <!-- PAGE 1: WEEKLY UPDATE -->
+    <div class="page" id="page1">
+      <div class="card">
+        <div class="user-info-bar">
+          <div class="user-info-field">
+            <label>ชื่อ</label>
+            <input type="text" class="shared-name" placeholder="ชื่อ-นามสกุล" oninput="syncName(this.value)">
+          </div>
+          <div class="info-divider"></div>
+          <div class="user-info-field">
+            <label>วัน/เดือน/ปี</label>
+            <input type="text" class="shared-date date-input" placeholder="DD/MM/YYYY" oninput="syncDate(this.value)">
+          </div>
+        </div>
+
+        <div class="header">
+          <div class="logo"><span>AB</span></div>
+          <div class="header-text">
+            <div class="header-sub">ส่งเป้าหมายทุกต้นเดือน / Update ทุกสัปดาห์ / ลงงานล่วงหน้าอย่างน้อย 2 วัน</div>
+            <div class="header-title">Weekly Update</div>
+          </div>
+        </div>
+
+        <div class="week-input-wrap">
+          <span class="week-label">WEEK</span>
+          <input type="number" class="week-input" placeholder="__" min="1" max="52">
+        </div>
+
+        <div class="section-block">
+          <label>Progression Update <span>: จากแผนต้นเดือน แต่ละเรื่องทำถึงไหนแล้ว ถึง / ไม่ถึงเพราะอะไร</span></label>
+          <textarea placeholder="อัปเดตความคืบหน้า..."></textarea>
+        </div>
+
+        <div class="section-block">
+          <label>New Prospect Update <span>: สถานการณ์ปัจจุบัน มีใครน่าสนใจเข้ามาบ้าง ทำอะไรกับเขาไปบ้าง และมีแผนจะทำอะไรกับเค้า</span></label>
+          <textarea placeholder="อัปเดต prospect ใหม่..."></textarea>
+        </div>
+
+        <div class="section-block">
+          <label>Continuous Plan <span>: ยอดส่วนที่เหลือจะมายังไง / ปรับเป้าหมาย</span></label>
+          <textarea placeholder="แผนต่อเนื่อง..."></textarea>
+        </div>
+
+        <div class="section-block">
+          <label>Q &amp; A <span>: คำถามเพิ่มเติม</span></label>
+          <textarea placeholder="คำถามที่อยากถาม upline..."></textarea>
+        </div>
+
+        <div class="section-block" style="background:#f9f9f9;">
+          <label>UPDATE ผังองค์กร</label>
+          <textarea placeholder="มีสมาชิกใหม่? เปลี่ยนแปลงอะไร?..." style="min-height:38px;"></textarea>
+        </div>
+
+        <button class="save-btn" onclick="saveData(1)">SAVE UPDATE</button>
+        <div class="saved-toast" id="toast1">✓ บันทึกแล้ว</div>
+      </div>
+    </div>
+
+    <!-- PAGE 2: ORG CHART -->
+    <div class="page" id="page2">
+      <div class="card">
+        <div class="user-info-bar">
+          <div class="user-info-field">
+            <label>ชื่อ</label>
+            <input type="text" class="shared-name" placeholder="ชื่อ-นามสกุล" oninput="syncName(this.value)">
+          </div>
+          <div class="info-divider"></div>
+          <div class="user-info-field">
+            <label>วัน/เดือน/ปี</label>
+            <input type="text" class="shared-date date-input" placeholder="DD/MM/YYYY" oninput="syncDate(this.value)">
+          </div>
+        </div>
+
+        <div class="header">
+          <div class="logo"><span>AB</span></div>
+          <div class="header-text">
+            <div class="header-sub">แผนผังองค์กร</div>
+            <div class="header-title">Organization Chart</div>
+          </div>
+        </div>
+
+        <div class="org-legend">
+          <div class="legend-item"><div class="legend-dot black"></div><span>ตัวเอง (IBO)</span></div>
+          <div class="legend-item"><div class="legend-dot gray"></div><span>Leg หลัก</span></div>
+          <div class="legend-item"><div class="legend-dot light"></div><span>Downline ย่อย</span></div>
+        </div>
+
+        <div class="org-tree">
+          <div class="org-node">
+            <div class="org-box root">
+              <input type="text" placeholder="ชื่อคุณ" id="rootName">
+              <input type="text" class="rank-input" placeholder="ตำแหน่ง / % PV" id="rootRank">
+            </div>
+            <div class="connector-down"></div>
+            <div class="org-children" id="legContainer">
+              <div class="org-child" id="leg1">
+                <div class="org-box">
+                  <input type="text" placeholder="Leg 1">
+                  <input type="text" class="rank-input" placeholder="ระดับ">
+                </div>
+                <div class="org-grandchildren" id="gc1">
+                  <div class="org-grandchild">
+                    <div class="org-box small"><input type="text" placeholder="ดาวน์ไลน์ 1"></div>
+                  </div>
+                  <button class="add-btn" onclick="addGrandchild('gc1')">+ เพิ่ม</button>
+                </div>
+              </div>
+              <div class="org-child" id="leg2">
+                <div class="org-box">
+                  <input type="text" placeholder="Leg 2">
+                  <input type="text" class="rank-input" placeholder="ระดับ">
+                </div>
+                <div class="org-grandchildren" id="gc2">
+                  <div class="org-grandchild">
+                    <div class="org-box small"><input type="text" placeholder="ดาวน์ไลน์ 1"></div>
+                  </div>
+                  <button class="add-btn" onclick="addGrandchild('gc2')">+ เพิ่ม</button>
+                </div>
+              </div>
+              <div class="org-child" id="leg3">
+                <div class="org-box">
+                  <input type="text" placeholder="Leg 3">
+                  <input type="text" class="rank-input" placeholder="ระดับ">
+                </div>
+                <div class="org-grandchildren" id="gc3">
+                  <div class="org-grandchild">
+                    <div class="org-box small"><input type="text" placeholder="ดาวน์ไลน์ 1"></div>
+                  </div>
+                  <button class="add-btn" onclick="addGrandchild('gc3')">+ เพิ่ม</button>
+                </div>
+              </div>
+            </div>
+            <div style="margin-top:14px;text-align:center;">
+              <button class="add-btn" onclick="addLeg()" style="min-width:130px;">+ เพิ่ม Leg ใหม่</button>
+            </div>
+          </div>
+        </div>
+
+        <button class="save-btn" onclick="saveData(2)">SAVE CHART</button>
+        <div class="saved-toast" id="toast2">✓ บันทึกแล้ว</div>
+      </div>
+    </div>
+
+  </div><!-- /content-area -->
+
+  <!-- Bottom Nav -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" onclick="showPage(0)">
+      <span class="nav-icon">🎯</span>
+      <span class="nav-label">Goals</span>
+      <div class="nav-indicator"></div>
+    </button>
+    <button class="nav-btn" onclick="showPage(1)">
+      <span class="nav-icon">📅</span>
+      <span class="nav-label">Weekly</span>
+      <div class="nav-indicator"></div>
+    </button>
+    <button class="nav-btn" onclick="showPage(2)">
+      <span class="nav-icon">🌳</span>
+      <span class="nav-label">Org Chart</span>
+      <div class="nav-indicator"></div>
+    </button>
+  </nav>
+
+</div><!-- /app -->
+
+<script>
+  // ===== PWA: Service Worker =====
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  }
+
+  // ===== PWA: Install Prompt =====
+  let deferredPrompt;
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferredPrompt = e;
+    document.getElementById('installBanner').style.display = 'flex';
+  });
+
+  document.getElementById('installBtn').addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    document.getElementById('installBanner').style.display = 'none';
+  });
+
+  window.addEventListener('appinstalled', () => {
+    document.getElementById('installBanner').style.display = 'none';
+  });
+
+  // ===== NAV =====
+  let currentPage = 0;
+
+  function showPage(idx) {
+    document.querySelectorAll('.page').forEach((p, i) => p.classList.toggle('active', i === idx));
+    document.querySelectorAll('.nav-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
+    document.querySelector('.content-area').scrollTop = 0;
+    currentPage = idx;
+  }
+
+  // ===== SHARED FIELDS =====
+  function syncName(val) {
+    document.querySelectorAll('.shared-name').forEach(el => { if (el.value !== val) el.value = val; });
+    localStorage.setItem('ab_shared_name', val);
+  }
+
+  function syncDate(val) {
+    document.querySelectorAll('.shared-date').forEach(el => { if (el.value !== val) el.value = val; });
+    localStorage.setItem('ab_shared_date', val);
+  }
+
+  function loadShared() {
+    const name = localStorage.getItem('ab_shared_name') || '';
+    const date = localStorage.getItem('ab_shared_date') || '';
+    document.querySelectorAll('.shared-name').forEach(el => el.value = name);
+    document.querySelectorAll('.shared-date').forEach(el => el.value = date);
+  }
+
+  // ===== SAVE / LOAD =====
+  function saveData(idx) {
+    const page = document.getElementById('page' + idx);
+    const inputs = page.querySelectorAll('input[type="text"], input[type="number"], textarea');
+    const data = {};
+    inputs.forEach((el, i) => { data['f' + i] = el.value; });
+    localStorage.setItem('ab_page_' + idx, JSON.stringify(data));
+    const toast = document.getElementById('toast' + idx);
+    toast.style.display = 'block';
+    setTimeout(() => toast.style.display = 'none', 2000);
+  }
+
+  function loadData(idx) {
+    const saved = localStorage.getItem('ab_page_' + idx);
+    if (!saved) return;
+    const data = JSON.parse(saved);
+    const page = document.getElementById('page' + idx);
+    const inputs = page.querySelectorAll('input[type="text"], input[type="number"], textarea');
+    inputs.forEach((el, i) => { if (data['f' + i] !== undefined) el.value = data['f' + i]; });
+  }
+
+  // ===== ORG CHART =====
+  let legCount = 3;
+  let gcCounts = { gc1: 1, gc2: 1, gc3: 1 };
+
+  function addGrandchild(containerId) {
+    const container = document.getElementById(containerId);
+    if (!gcCounts[containerId]) gcCounts[containerId] = 1;
+    gcCounts[containerId]++;
+    const n = gcCounts[containerId];
+    const div = document.createElement('div');
+    div.className = 'org-grandchild';
+    div.innerHTML = `<div class="org-box small"><input type="text" placeholder="ดาวน์ไลน์ ${n}"></div>`;
+    container.insertBefore(div, container.querySelector('.add-btn'));
+  }
+
+  function addLeg() {
+    legCount++;
+    const gcId = 'gc' + legCount;
+    gcCounts[gcId] = 1;
+    const legContainer = document.getElementById('legContainer');
+    const legDiv = document.createElement('div');
+    legDiv.className = 'org-child';
+    legDiv.id = 'leg' + legCount;
+    legDiv.innerHTML = `
+      <div class="org-box">
+        <input type="text" placeholder="Leg ${legCount}">
+        <input type="text" class="rank-input" placeholder="ระดับ">
+      </div>
+      <div class="org-grandchildren" id="${gcId}">
+        <div class="org-grandchild">
+          <div class="org-box small"><input type="text" placeholder="ดาวน์ไลน์ 1"></div>
+        </div>
+        <button class="add-btn" onclick="addGrandchild('${gcId}')">+ เพิ่ม</button>
+      </div>`;
+    legContainer.appendChild(legDiv);
+  }
+
+  // ===== INIT =====
+  loadShared();
+  [0, 1, 2].forEach(loadData);
+</script>
+</body>
+</html>
